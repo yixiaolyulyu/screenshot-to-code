@@ -37,6 +37,23 @@ def serialize_gemini_tools(tools: List[CanonicalToolDefinition]) -> List[types.T
     return [types.Tool(function_declarations=declarations)]
 
 
+# Gemini 3 preview models support the string `thinking_level` field on
+# ThinkingConfig. Gemini 2.5 (GA) uses the integer `thinking_budget` field
+# instead. We branch in `_build_thinking_config` to keep both working.
+GEMINI_3_MODELS = {
+    Llm.GEMINI_3_FLASH_PREVIEW_HIGH,
+    Llm.GEMINI_3_FLASH_PREVIEW_MINIMAL,
+    Llm.GEMINI_3_1_PRO_PREVIEW_HIGH,
+    Llm.GEMINI_3_1_PRO_PREVIEW_MEDIUM,
+    Llm.GEMINI_3_1_PRO_PREVIEW_LOW,
+}
+
+GEMINI_2_5_MODELS = {
+    Llm.GEMINI_2_5_FLASH,
+    Llm.GEMINI_2_5_PRO,
+}
+
+
 def _get_gemini_api_model_name(model: Llm) -> str:
     if model in [Llm.GEMINI_3_FLASH_PREVIEW_HIGH, Llm.GEMINI_3_FLASH_PREVIEW_MINIMAL]:
         return "gemini-3-flash-preview"
@@ -46,6 +63,10 @@ def _get_gemini_api_model_name(model: Llm) -> str:
         Llm.GEMINI_3_1_PRO_PREVIEW_LOW,
     ]:
         return "gemini-3.1-pro-preview"
+    if model == Llm.GEMINI_2_5_FLASH:
+        return "gemini-2.5-flash"
+    if model == Llm.GEMINI_2_5_PRO:
+        return "gemini-2.5-pro"
     return model.value
 
 
@@ -62,6 +83,24 @@ def _get_thinking_level_for_model(model: Llm) -> str:
     if model == Llm.GEMINI_3_FLASH_PREVIEW_MINIMAL:
         return "minimal"
     return "high"
+
+
+def _build_thinking_config(model: Llm) -> types.ThinkingConfig:
+    """Build a ThinkingConfig that's compatible with the model family.
+
+    - Gemini 3 preview: uses ``thinking_level`` (string).
+    - Gemini 2.5 GA: uses ``thinking_budget`` = -1 (let the model decide).
+    """
+    if model in GEMINI_2_5_MODELS:
+        return types.ThinkingConfig(
+            thinking_budget=-1,
+            include_thoughts=True,
+        )
+    thinking_level = _get_thinking_level_for_model(model)
+    return types.ThinkingConfig(
+        thinking_level=cast(Any, thinking_level),
+        include_thoughts=True,
+    )
 
 
 def _extract_text_from_content(content: str | List[Dict[str, Any]]) -> str:
@@ -276,15 +315,11 @@ class GeminiProviderSession(ProviderSession):
         ]
 
     async def stream_turn(self, on_event: EventSink) -> ProviderTurn:
-        thinking_level = _get_thinking_level_for_model(self._model)
         config = types.GenerateContentConfig(
             temperature=1.0,
             max_output_tokens=50000,
             system_instruction=self._system_prompt,
-            thinking_config=types.ThinkingConfig(
-                thinking_level=cast(Any, thinking_level),
-                include_thoughts=True,
-            ),
+            thinking_config=_build_thinking_config(self._model),
             tools=self._tools,
         )
 

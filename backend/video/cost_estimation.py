@@ -50,6 +50,16 @@ GEMINI_PRICING = {
         "input_per_million": 2.00,
         "output_per_million": 12.00,
     },
+    # Gemini 2.5 Flash (GA)
+    "gemini-2.5-flash": {
+        "input_per_million": 0.30,
+        "output_per_million": 2.50,
+    },
+    # Gemini 2.5 Pro (GA, ≤200k input price tier)
+    "gemini-2.5-pro": {
+        "input_per_million": 1.25,
+        "output_per_million": 10.00,
+    },
 }
 
 
@@ -62,6 +72,10 @@ def get_model_api_name(model: Llm) -> str:
         Llm.GEMINI_3_1_PRO_PREVIEW_LOW,
     ]:
         return "gemini-3.1-pro-preview"
+    elif model == Llm.GEMINI_2_5_FLASH:
+        return "gemini-2.5-flash"
+    elif model == Llm.GEMINI_2_5_PRO:
+        return "gemini-2.5-pro"
     return model.value
 
 
@@ -109,7 +123,7 @@ def calculate_cost(
     model: Llm,
 ) -> CostEstimate:
     model_name = get_model_api_name(model)
-    pricing = GEMINI_PRICING.get(model_name, GEMINI_PRICING["gemini-3-flash-preview"])
+    pricing = GEMINI_PRICING.get(model_name, GEMINI_PRICING["gemini-2.5-flash"])
 
     input_cost = (input_tokens / 1_000_000) * pricing["input_per_million"]
     output_cost = (output_tokens / 1_000_000) * pricing["output_per_million"]
@@ -171,7 +185,7 @@ def format_detailed_input_estimate(
     total_input_tokens = frame_tokens + PROMPT_TOKENS_ESTIMATE
 
     model_name = get_model_api_name(model)
-    pricing = GEMINI_PRICING.get(model_name, GEMINI_PRICING["gemini-3-flash-preview"])
+    pricing = GEMINI_PRICING.get(model_name, GEMINI_PRICING["gemini-2.5-flash"])
     input_cost = (total_input_tokens / 1_000_000) * pricing["input_per_million"]
 
     return (

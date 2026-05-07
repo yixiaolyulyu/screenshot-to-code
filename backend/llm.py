@@ -30,6 +30,9 @@ class Llm(Enum):
     GEMINI_3_1_PRO_PREVIEW_HIGH = "gemini-3.1-pro-preview (high thinking)"
     GEMINI_3_1_PRO_PREVIEW_MEDIUM = "gemini-3.1-pro-preview (medium thinking)"
     GEMINI_3_1_PRO_PREVIEW_LOW = "gemini-3.1-pro-preview (low thinking)"
+    # Gemini 2.5 (GA - works with all Gemini API keys)
+    GEMINI_2_5_FLASH = "gemini-2.5-flash"
+    GEMINI_2_5_PRO = "gemini-2.5-pro"
 
 
 class Completion(TypedDict):
@@ -67,6 +70,8 @@ MODEL_PROVIDER: dict[Llm, str] = {
     Llm.GEMINI_3_1_PRO_PREVIEW_HIGH: "gemini",
     Llm.GEMINI_3_1_PRO_PREVIEW_MEDIUM: "gemini",
     Llm.GEMINI_3_1_PRO_PREVIEW_LOW: "gemini",
+    Llm.GEMINI_2_5_FLASH: "gemini",
+    Llm.GEMINI_2_5_PRO: "gemini",
 }
 
 # Convenience sets for membership checks

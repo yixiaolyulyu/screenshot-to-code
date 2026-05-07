@@ -50,4 +50,12 @@ MODEL_PRICING: Dict[str, ModelPricing] = {
     "gemini-3.1-pro-preview": ModelPricing(
         input=2.00, output=12.00, cache_read=0.20
     ),
+    # Gemini 2.5 GA pricing (paid tier, per https://ai.google.dev/pricing)
+    # Free tier on AI Studio is also available with rate limits.
+    "gemini-2.5-flash": ModelPricing(
+        input=0.30, output=2.50, cache_read=0.075
+    ),
+    "gemini-2.5-pro": ModelPricing(
+        input=1.25, output=10.00, cache_read=0.31
+    ),
 }
