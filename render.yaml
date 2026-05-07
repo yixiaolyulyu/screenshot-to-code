@@ -1,0 +1,32 @@
+# Render Blueprint - one-click backend deployment
+# Docs: https://render.com/docs/blueprint-spec
+#
+# Usage:
+#   1. Fork this repo to your own GitHub account.
+#   2. Go to https://dashboard.render.com/blueprints and click "New Blueprint Instance".
+#   3. Pick your fork - Render will read this file and create the service automatically.
+#
+# Notes:
+#   - The free tier sleeps after 15 minutes of inactivity (cold start ~30s on next request).
+#   - No API keys are configured here on purpose - end users provide their own keys
+#     via the frontend Settings dialog (gear icon).
+services:
+  - type: web
+    name: screenshot-to-code-backend
+    runtime: docker
+    rootDir: backend
+    dockerfilePath: ./Dockerfile
+    plan: free
+    region: singapore  # change to oregon / frankfurt / ohio if you prefer
+    healthCheckPath: /
+    envVars:
+      - key: IS_PROD
+        value: "true"
+      # Optional: if you want to provide a default key for everyone, uncomment and
+      # set the value via the Render dashboard (do NOT commit secrets here).
+      # - key: OPENAI_API_KEY
+      #   sync: false
+      # - key: ANTHROPIC_API_KEY
+      #   sync: false
+      # - key: GEMINI_API_KEY
+      #   sync: false
